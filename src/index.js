@@ -1,17 +1,64 @@
-import React from 'react';
-import ReactDOM from 'react-dom/client';
-import './index.css';
-import App from './App';
-import reportWebVitals from './reportWebVitals';
+import React from "react";
+import ReactDOM from "react-dom/client";
 
-const root = ReactDOM.createRoot(document.getElementById('root'));
+import { createBrowserRouter, RouterProvider } from "react-router-dom";
+
+import { CssBaseline, ThemeProvider } from "@mui/material";
+import { theme } from "./theme";
+
+import { GoogleOAuthProvider } from "@react-oauth/google";
+
+import Index from "./routes";
+import Home from "./routes/home";
+import Start from "./routes/home/start";
+import Semester, { loader as semesterLoader } from "./routes/home/semester";
+
+import ErrorPage from "./ErrorPage";
+import GradeTable, {
+  loader as gradeTableLoader,
+} from "./routes/home/gradeTable";
+import Upload, { loader as uploadLoader } from "./routes/home/upload";
+
+const root = ReactDOM.createRoot(document.getElementById("root"));
+
+const router = createBrowserRouter([
+  {
+    path: "/",
+    element: <Index />,
+    errorElement: <ErrorPage />,
+  },
+  {
+    path: "home",
+    element: <Home />,
+    children: [
+      { index: true, element: <Start /> },
+      {
+        path: "/home/:code",
+        element: <Semester />,
+        loader: semesterLoader,
+        children: [
+          {
+            path: "/home/:code/:class_code",
+            element: <GradeTable />,
+            loader: gradeTableLoader,
+          },
+          {
+            path: "/home/:code/upload/:class_code",
+            element: <Upload />,
+            loader: uploadLoader,
+          },
+        ],
+      },
+    ],
+  },
+]);
 root.render(
   <React.StrictMode>
-    <App />
+    <GoogleOAuthProvider clientId="716180471328-k91kdip1kj2024jkj5tporlkehffbnb9.apps.googleusercontent.com">
+      <ThemeProvider theme={theme}>
+        <CssBaseline />
+        <RouterProvider router={router} />
+      </ThemeProvider>
+    </GoogleOAuthProvider>
   </React.StrictMode>
 );
-
-// If you want to start measuring performance in your app, pass a function
-// to log results (for example: reportWebVitals(console.log))
-// or send to an analytics endpoint. Learn more: https://bit.ly/CRA-vitals
-reportWebVitals();
